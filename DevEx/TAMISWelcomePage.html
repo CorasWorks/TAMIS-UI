@@ -1,0 +1,165 @@
+<style>
+
+  .app-map .k-in {
+  display: none;
+  }
+
+  .app-map-description {
+  padding-top: 25px;
+  padding-left: 25px;
+  font-family: 'Century Gothic', sans-serif;
+  font-size: 1.5em;
+  }
+
+  .app-map .tab-description {
+  font-style: italic;
+  font-size: 1.15em;
+  }
+
+  .app-map .tab-title {
+  font-size: 1.15em;
+  border-bottom: 1px solid gray;
+  }
+
+  .app-map .title {
+  padding-top: 5px;
+  /* padding-bottom: 5px; 
+  color: #000000;*/
+  }
+
+  .app-map .description {
+  padding-left: 10px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  color: #3d3d3d;
+  }
+  
+  .nav-link:hover {
+  text-decoration: none;
+  font-family: 'Century Gothic', sans-serif;
+  }
+
+  .nav-link:hover .title {
+  color: #FFCB05;
+  background-color: #3d3d3d;
+  }
+
+  span.title.view-title {
+  color: #4e4e4e;
+  }
+
+  span.title.tab-title {
+  color: #3d3d3d;
+  }
+
+  .app-map .k-treeview  {
+  font-family: 'Century Gothic', sans-serif;
+  font-size: 1.25em;
+  background-color: transparent;
+  display:inline-block;
+  min-height:200px;
+  padding:20px;
+  padding-right:40px;
+  }
+
+  .app-map .k-item .k-item:hover .view-title {
+  font-weight:bold;
+  }
+
+  .app-map .k-item  .view-description {
+  font-style:italic;
+  color: #3d3d3d;
+  }
+
+  .k-item:hover{
+  color: #3d3d3d;
+  }
+
+  .app-map {
+  background-color: transparent;
+  float:left;
+  border:none;
+  }
+
+  .tamis-title{
+  background-color: #3D3D3D;
+  color: white;
+  padding: 10px;
+  margin: 0px;
+  }
+
+  .boundary {
+  border: 2px solid #3d3d3d;
+  background-color:#c2c2c2; 
+  margin: 20px;
+  border-radius: 4px;
+  border: 2px solid #3d3d3d;
+  background-color: #c2c2c2;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+  }
+
+  #app-map-header-title {
+  padding-left:15px; 
+  font-family:calibri, sans-serif; 
+  text-align:left; 
+  
+  }
+
+  #app-map-description-body{
+  padding-left:15px; 
+  color: #3d3d3d;
+  }
+  
+  #navCol{
+  color: #FFFFFF;
+  }
+
+  div.k-treeview {
+  white-space: normal;
+  }
+  <!--
+<div class='col-sm-3'>
+    <button id="navCol" type="button">Colapse Nav</button>
+  </div>
+-->
+</style>
+<div data-bind="initComponent">
+  <div class="row boundary" border='solid'>
+    <!-- ko if: $component.ready() == true -->
+    <div>
+      <h2 id="app-map-header-title" class="tamis-title" data-bind="html: $component.appName"></h2>
+      <br/><br/>
+      <div class="col-md-9">
+        <p id="app-map-description-body" data-bind="html: $component.appDescription"></p>
+      </div>
+      <div class="col-md-3">
+          <button id="navCol" type="button">Colapse Nav</button>
+      </div>
+      <hr/>
+      <div class="app-map k-block">
+        <ul data-bind="kendoTreeView: {}, foreach: $component.appMap().Tabs">
+          <!-- ko if: $component.onlyEnabled() == false || ($component.onlyEnabled() == true && Enabled == true)-->
+          <li>
+            <div>
+              <span class="title tab-title" data-bind="html: Title"></span>
+              <div class="description tab-description" data-bind="html: Description"></div>
+            </div>
+            <ul data-bind="foreach: Views">
+              <!-- ko if: $component.onlyEnabled() == false || ($component.onlyEnabled() == true && Enabled == true)-->
+              <a class="nav-link" data-bind="attr: {href: navLink}">
+                <li class="k-item">
+                  <span class="title view-title" data-bind="html: Title"></span>
+                  <div class="description view-description" data-bind="html: Description"></div>
+                </li>
+              </a>
+              <!-- /ko -->
+            </ul>
+          </li>
+          <!-- /ko -->
+        </ul>
+      </div>
+
+    </div>
+    <!-- /ko -->
+  </div>
+</div>
