@@ -237,33 +237,36 @@ ol.setLS = function (){
 		ol.vars[i]=ol.vars[i].split("=");
 	}
 	//Placeholder for LS var
-	//ol.item = ol.localDS.add();
 	/* Checks/Updates LS Var Key Value pairs
 	 * Creates a numeric Value from the key,
 	 * Unless that value is HIERITEMID, which is concatontes into a string with !'s
 	 */
+	var localStorage = cc.api.getLocalStorageDS()
+	localStorage.fetch(function() {
 	for (var i = 0; i < ol.parms.length; i++) {
-		ol.item = ol.localDS.add();
-		ol.item.set('key', '['+ol.parms[i].key+']');
+		var item = localStorage.add();
+		item.set('key', '['+ol.parms[i].key+']');
 
-		ol.temp = ol.parms[i].val;
+		var temp = ol.parms[i].val;
 		for (var j = 0; j < ol.vars.length; j++) {
 			if (ol.parms[i].key == ol.vars[j][0]) {
 				if(!isNaN(parseFloat(ol.vars[j][1])) && isFinite(ol.vars[j][1])){
-					if(ol.parms[i].key == 'HIERITEMID')	ol.temp = '!'+ol.vars[j][1]+'!';
-					else ol.temp = ol.vars[j][1];
+					if(ol.parms[i].key == 'HIERITEMID')	temp = '!'+ol.vars[j][1]+'!';
+					else temp = ol.vars[j][1];
 				break;
 				}
 			}
 		}
-		ol.item.set('value', ol.temp);
+		item.set('value', temp);
 	}
 
-	ol.localDS.sync();
-}
+	localStorage.sync();
+})
+};
+ol.setLS();
 
 ol.aQueue = new AJAXQueue();
-ol.localDS.read().then( ol.setLS() );
+//ol.localDS.read().then( ol.setLS() );
 
 /* AjaxSetup - sets this check to be performed all Ajax requests are sent.
  *
@@ -271,89 +274,52 @@ ol.localDS.read().then( ol.setLS() );
  * make check for permissions. If this check passes, resend AJAX request,
  * after entering into aQueue to mark it should be allowed to continue
  */
+ 
 $.ajaxSetup({
 		beforeSend: function(jqXHR){
-			var comp = this;
-			if(comp.url.valueOf().includes("/odata/Connections('" + ol.sqlConnectionID + "')/Procedures('" + ol.dbQuery + "')")) {
-				console.log(comp.url +" = X");
-			} else if (comp.url.valueOf().includes("/odata/Connections('"+ol.sqlConnectionID+"')")) {
-				if(ol.aQueue.remove(comp.url.valueOf()) != -1){
-					console.log(comp.url +" = 1b")
+			var turl = this.url.valueOf()
+			if(turl.indexOf("/odata/Connections('" + ol.sqlConnectionID + "')/Procedures('" + ol.dbQuery + "')") != -1 || turl.indexOf("odata/Connections('a0070443-8e55-4006-afea-6418cd2ca34d')/Lists('dbo.lkup_munitions_account')/ListItems?%24filter=(mac_ID+eq+") != -1 || turl.indexOf("/odata/Connections('a0070443-8e55-4006-afea-6418cd2ca34d')/Lists('dbo.t_hierarchy_item')/ListItems?%24top=1&%24filter=(hieritemID+eq+") != -1) {
+				console.log(turl +" = X");
+			} else if (turl.indexOf("/odata/Connections('"+ol.sqlConnectionID+"')") != -1) {
+				if(ol.aQueue.remove(ol.removeCacheBuster(turl)) != -1){
+					console.log(turl +" = 1b")
 				} else {
-					comp.oldURL = comp.url.valueOf();
-					comp.oldXHR = comp.xhr;
-					jqXHR.done();
-					ol.AJAXCheck(comp).then( function(){
-						ol.aQueue.enqueue(comp.oldURL);
-						console.log(comp.oldURL +" = 1a")
-						console.log(comp)
-						if(comp.type =="GET"){
-							$.ajax({
-								accepts: comp.accepts,
-								async: comp.async,
-								cache: comp.cache,
-								contentType: comp.contentType,
-								contents: comp.contents,
-								converters: comp.converters,
-								crossDomain: comp.crossDomain,
-								dataType : comp.dataType,
-								dataTypes : comp.dataTypes,
-								error: comp.error,
-								flatOptions:comp.flatOptions,
-								global: comp.global,
-								hasContent: comp.hasContent,
-								headers: comp.headers,
-								isLocal: comp.isLocal,
-								jsonp: comp.jsonP,
-								jsonpCallback: comp.jsonpCallback,
-								processData: comp.processData,
-								responseFields: comp.responseFields,
-								success: comp.success,
-								type : comp.type,
-								url : comp.oldURL,
-								xhr: comp.oldXHR
-							});
-						} else if(comp.type =="POST"){
-							$.ajax({
-								accepts: comp.accepts,
-								async: comp.async,
-								cache: comp.cache,
-								contentType: comp.contentType,
-								contents: comp.contents,
-								converters: comp.converters,
-								crossDomain: comp.crossDomain,
-								data: comp.data,
-								dataType : comp.dataType,
-								dataTypes : comp.dataTypes,
-								error: comp.error,
-								flatOptions:comp.flatOptions,
-								global: comp.global,
-								hasContent: comp.hasContent,
-								headers: comp.headers,
-								isLocal: comp.isLocal,
-								//jquery
-								jsonp: comp.jsonP,
-								jsonpCallback: comp.jsonpCallback,
-								processData: comp.processData,
-								responseFields: comp.responseFields,
-								success: comp.success,
-								type : comp.type,
-								url : comp.oldURL,
-								xhr: comp.oldXHR
-							});
-
-						} else {
-							console.log("Unexpected Request Type: "+comp.type);
-						}
-					},
-					function () {
-						console.log(comp.oldURL +" = -1");
-					})
-					debugger;
+					console.log(this);
+					var klone = {
+								accepts: this.accepts,
+								async: this.async,
+								cache: this.cache,
+								contentType: this.contentType,
+								contents: this.contents,
+								converters: this.converters,
+								crossDomain: this.crossDomain,
+								data: this.data,
+								dataType : this.dataType,
+								dataTypes : this.dataTypes,
+								error: this.error,
+								flatOptions:this.flatOptions,
+								global: this.global,
+								hasContent: this.hasContent,
+								headers: this.headers,
+								isLocal: this.isLocal,
+								//jsonp: this.jsonP,
+								//jsonpCallback: this.jsonpCallback,
+								jsonp: false,
+								jsonpCallback: function(){return ''},
+								method: this.method,
+								processData: this.processData,
+								responseFields: this.responseFields,
+								success: this.success,
+								type : this.type,
+								url : this.url,
+								xhr: this.xhr
+							};
+					jqXHR.abort();
+					ol.AJAXCheck(klone);
 				}
 			}
 			else {
-				console.log(comp.url +" = 0");
+				console.log(turl +" = 0");
 			}
 		}
 });
@@ -362,61 +328,73 @@ $.ajaxSetup({
  *
  * Function executes before AJAX is sent, determining if this is a safe call, or if it needs to be checked against
  */
-ol.AJAXCheck = function (comp) {
-	return new Promise ( function (resolve, reject){
-			var temp =  comp.oldURL.valueOf().substring(comp.oldURL.valueOf().indexOf("/Lists('")+8, comp.oldURL.valueOf().length);
-			comp.DBTable = temp.substring(0, temp.indexOf("')/"));
-			//var p4 = ol.localDS.read().then( return this);
-			//Promie.all([ol.p1, ol.p2, ol.p3, p4]).then(function (values) {
-			 $.when(ol.p3.promise(), ol.p2.promise(), ol.p3.promise()).then(function () {
-				//Fetch Proc
-				 //Check Filter Params
-				ol.localDS.read().then( function(){
-					comp.localAcct = _.find(ol.localDS.data(), {key: "[MACID]"}).value;
-					comp.localHier = _.find(ol.localDS.data(), {key: "[HIERITEMID]"}).valueOf();
-					comp.localHier = parseInt(comp.localHier.substring(1, comp.localHier.length-1));
-					comp.localFY = _.find(ol.localDS.data(), {key: "[FY]"}).value;
-					comp.pURL = ol.baseURL + "/odata/Connections('" + ol.sqlConnectionID + "')/Procedures('" + ol.dbQuery + "')";
+ol.AJAXCheck = function (klone) {
+	var temp =  klone.url.valueOf().substring(klone.url.valueOf().indexOf("/Lists('")+8, klone.url.valueOf().length);
+	this.DBTable = temp.substring(0, temp.indexOf("')/"));
+	 $.when(ol.p3.promise(), ol.p2.promise(), ol.p3.promise()).then(function () {
+		//Fetch Proc
+		 //Check Filter Params
+		ol.localDS.read().then( function(){
+			var localAcct = _.find(ol.localDS.data(), {key: "[MACID]"}).value;
+			var localHier = _.find(ol.localDS.data(), {key: "[HIERITEMID]"}).value;
+			localHier = parseInt(localHier.substring(1, localHier.length-1));
+			var localFY = _.find(ol.localDS.data(), {key: "[FY]"}).value;
+			var pURL = ol.baseURL + "/odata/Connections('" + ol.sqlConnectionID + "')/Procedures('" + ol.dbQuery + "')";
 
-					$.ajax({
-						type : "POST",
-						url : comp.pURL,
-						data: JSON.stringify({'cac_edipi':1455943937,
-										//'cac_edipi': ol.EDIPI,
-										'MACID':comp.localAcct,
-										'FY':comp.localFY,
-										'hierItemID':comp.localHier,
-										'permission': 'none'
-										//'permission':comp.DBTable
-						}),
-						success : function (result) {
-						console.log("I'm a success!\nWait...That's not right...");
-						reject()
-						},
-						error : function (result) {
-							console.log(result);
-							if(JSON.parse(result.responseText).Results[0].RETURN_VALUE === 1) {
-								resolve()
-							}
-							else{
-								cc.notification.trigger('warning', {
-												title: 'Access Denied',
-												message: 'Insufficient Privileges: \n Contact Support if you believe you recieved this message in Error.'
-								});
-								reject()
-							}
-						},
-						dataType : "jsonp",
-						contentType: 'application/json; charset=utf-8',
-						headers : {
-							'AppId' : ol.appId,
-							'Accept' : 'application/json,odata.metadata=minimal',
-							'Content-Type' : 'application/json'
-						}
-					});
-				});
+			$.ajax({
+				type : "POST",
+				url : pURL,
+				data: JSON.stringify({'cac_edipi':1455943937,
+					//'cac_edipi': ol.EDIPI,
+					'MACID':localAcct,
+					'FY':localFY,
+					'hierItemID':localHier,
+					'permission': 'none'
+					//'permission':DBTable
+				}),
+				success : function (result) {
+				console.log("I'm a success!\nWait...That's not right...");
+				},
+				error : function (result) {
+					console.log(result);
+					if(JSON.parse(result.responseText).Results[0].RETURN_VALUE === 1) {
+						ol.aQueue.enqueue(ol.removeCacheBuster(klone.url));
+						console.log(klone.url +" = 1a")
+						console.log(klone)
+						$.ajax(klone);
+					}
+					else{
+						cc.notification.trigger('warning', {
+							title: 'Access Denied',
+							message: 'Insufficient Privileges: \n Contact Support if you believe you recieved this message in Error.'
+						});
+					}
+				},
+				dataType : "jsonp",
+				contentType: 'application/json; charset=utf-8',
+				jsonp: false,
+				jsonpCallback: function(){return ''},
+				headers : {
+					'AppId' : ol.appId,
+					'Accept' : 'application/json,odata.metadata=minimal',
+					'Content-Type' : 'application/json'
+				}
 			});
 		});
+	});
+}
+
+ol.removeCacheBuster = function (str){
+	var i = str.lastIndexOf('_=')
+	var j = str.length
+	if(i != -1 && i+2 != j) {
+		var tempURL = str.substring(i+2, j)
+		if(+tempURL === +tempURL){
+			str = str.substring(0, i)
+		}
+	}
+	debugger
+	return str
 }
 
 //Watches window for URL changes
@@ -429,5 +407,5 @@ window.onhashchange = function(){
 	ol.vars = ol.query.split("&");
 	debugger;
 	ol.aQueue.checkURL();
-	ol.setLS()
+	ol.setLS();
 }
